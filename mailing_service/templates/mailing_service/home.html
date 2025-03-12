@@ -1,0 +1,22 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h2 class="text-center mb-5 mt-5">Главная страница</h2>
+<table class="table text-center">
+    <thead>
+        <tr>
+        <th>Количество всех рассылок</th>
+        <th>Количество активных рассылок</th>
+        <th>Количество уникальных получателей</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+        <td>{{ mailing_count }}</td>
+        <td>{{ mailing_count_active }}</td>
+        <td>{{ mailing_recipient_count }}</td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}

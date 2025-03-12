@@ -1,0 +1,33 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Информация о рассылке {{ mailing.message }} </h1>
+<table class="table text-center">
+    <thead>
+    <tr>
+        <th>Время начала рассылки</th>
+        <th>Время окончания рассылки</th>
+        <th>Статус рассылки</th>
+        <th>Сообщение</th>
+        <th>Получатели</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ mailing.start_time }}</td>
+        <td>{{ mailing.end_time }}</td>
+        <td>{{ mailing.status }}</td>
+        <td>{{ mailing.message }}</td>
+            <td>
+                {% for recipient in mailing.recipients.all %}
+                    {{ recipient.email }}{% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    Нет получателей
+                {% endfor %}
+            </td>
+    </tr>
+    </tbody>
+    <a href="{% url 'mailing_service:mailing_list' %}" class="btn btn-primary mb-3">Назад</a>
+
+</table>
+{% endblock %}

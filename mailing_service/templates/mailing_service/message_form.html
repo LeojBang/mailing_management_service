@@ -1,0 +1,20 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1 class="mb-3 mt-3">Добавить письмо</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.subject }}<br>
+    {{ form.body }}<br>
+    <button type="submit" class="btn btn-primary">
+        {% if message %}
+            Сохранить
+        {% else %}
+            Добавить
+        {% endif %}
+    </button>
+    <a href="{% url 'mailing_service:message_list' %}" class="btn btn-primary">Назад</a>
+
+
+</form>
+{% endblock %}

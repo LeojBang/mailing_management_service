@@ -1,0 +1,31 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h2 class="text-center mb-3 mt-3">Список сообщений</h2>
+<div class="row">
+    <div class="d-flex align-items-center">
+        <a href="{% url 'mailing_service:message_create' %}" class="btn btn-primary mb-3">Добавить сообщение</a>
+    </div>
+</div>
+<table class="table text-center">
+    <thead>
+        <tr>
+            <th>Тема письма</th>
+            <th>Текст письма</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for message in message_list %}
+        <tr>
+            <td>{{ message.subject }}</td>
+            <td>{{ message.body }}</td>
+            <td>
+                <a href="{% url 'mailing_service:message_detail' message.id %}" class="btn btn-info btn-sm">Просмотр</a>
+                <a href="{% url 'mailing_service:message_update' message.id %}" class="btn btn-warning btn-sm">Редактировать</a>
+                <a href="{% url 'mailing_service:message_delete' message.id %}" class="btn btn-danger btn-sm">Удалить</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

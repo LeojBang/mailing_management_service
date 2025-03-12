@@ -1,0 +1,21 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Добавить получателя</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.email }}<br>
+    {{ form.full_name }}<br>
+    {{ form.comment }}<br>
+    <button type="submit" class="btn btn-primary">
+        {% if object %}
+            Сохранить
+        {% else %}
+            Добавить
+        {% endif %}
+    </button>
+    <a href="{% url 'mailing_service:mailing_recipient_list' %}" class="btn btn-primary">Назад</a>
+
+
+</form>
+{% endblock %}

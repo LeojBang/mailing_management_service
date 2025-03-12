@@ -1,0 +1,23 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Информация о получателе {{ mailing_recipient.full_name }} </h1>
+<table class="table text-center">
+    <thead>
+    <tr>
+        <th>Ф. И. О.</th>
+        <th>Email</th>
+        <th>Комментарий</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ mailing_recipient.full_name }}</td>
+        <td>{{ mailing_recipient.email }}</td>
+        <td>{{ mailing_recipient.comment|default:"-" }}</td>
+    </tr>
+    </tbody>
+    <a href="{% url 'mailing_service:mailing_recipient_list' %}" class="btn btn-primary mb-3">Назад</a>
+
+</table>
+{% endblock %}
