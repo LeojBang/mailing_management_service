@@ -1,10 +1,14 @@
 from django.db import models
+from django.utils import timezone
+
+from users.models import CustomUser
 
 
 class MailingRecipient(models.Model):
     email = models.EmailField(unique=True, verbose_name='Email')
-    full_name = models.CharField(max_length=100, verbose_name='Ф. И. О. ')
+    full_name = models.CharField(max_length=100, verbose_name='Ф. И. О.')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.full_name
@@ -17,6 +21,8 @@ class MailingRecipient(models.Model):
 class Message(models.Model):
     subject = models.CharField(max_length=255, verbose_name='Тема письма')
     body = models.TextField(verbose_name='Текст письма')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
 
     def __str__(self):
         return self.subject
@@ -37,6 +43,14 @@ class Mailing(models.Model):
     status = models.CharField(choices=STATUS_CHOICES, default='Created', verbose_name='Статус рассылки')
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение')
     recipients = models.ManyToManyField(MailingRecipient, verbose_name='Получатели')
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+
+    def check_status(self):
+        """Проверка статуса рассылки на основе текущего времени."""
+        if timezone.now() > self.end_time:
+            self.status = 'Completed'
+            self.save()
+
 
     def __str__(self):
         return f"Рассылка {self.id} ({self.status})"

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+import certifi
 from dotenv import load_dotenv
 
 load_dotenv(override=True)
@@ -22,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'mailing_service',
+    'users',
 ]
 
 MIDDLEWARE = [
@@ -97,3 +99,18 @@ MEDIA_URL = "media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "/"
+
+os.environ["SSL_CERT_FILE"] = certifi.where()
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.yandex.ru"
+EMAIL_PORT = 465
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
+EMAIL_HOST_USER = "max98.merkulov@yandex.ru"
+EMAIL_HOST_PASSWORD = os.getenv("YA_PASS")
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
