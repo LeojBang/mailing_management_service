@@ -8,6 +8,7 @@ from django.views.generic import ListView, CreateView, DeleteView, DetailView, U
 
 from mailing_service.forms import MailingRecipientForm, MessageForm, MailingForm
 from mailing_service.models import MailingRecipient, Message, Mailing
+from mailing_service.services import get_mailing_from_cache
 
 
 # Create your views here.
@@ -57,6 +58,10 @@ class MailingRecipientUpdateView(LoginRequiredMixin, UpdateView):
     form_class = MailingRecipientForm
     success_url = reverse_lazy('mailing_service:mailing_recipient_list')
 
+    def form_valid(self, form):
+        form.instance.owner = self.get_object().owner
+        return super().form_valid(form)
+
     def get_queryset(self):
         return MailingRecipient.objects.filter(owner=self.request.user)
 
@@ -80,11 +85,15 @@ class MessageListView(ListView):
     context_object_name = 'message_list'
 
 
-class MessageCreateView(CreateView):
+class MessageCreateView(LoginRequiredMixin, CreateView):
     model = Message
     template_name = 'mailing_service/message_form.html'
     form_class = MessageForm
     success_url = reverse_lazy('mailing_service:message_list')
+
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
 
 
 class MessageDetailView(DetailView):
@@ -93,7 +102,7 @@ class MessageDetailView(DetailView):
     context_object_name = 'message'
 
 
-class MessageUpdateView(UpdateView):
+class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     template_name = 'mailing_service/message_form.html'
     form_class = MessageForm
@@ -101,6 +110,10 @@ class MessageUpdateView(UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('mailing_service:message_detail', args=[self.kwargs["pk"]])
+
+    def form_valid(self, form):
+        form.instance.owner = self.get_object().owner
+        return super().form_valid(form)
 
 
 class MessageDeleteView(DeleteView):
@@ -140,7 +153,7 @@ class MailingListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         if self.request.user.has_perm("mailings.view_all_mailings"):
-            return Mailing.objects.all()
+            return get_mailing_from_cache()
         return Mailing.objects.filter(owner=self.request.user)
 
 
@@ -174,6 +187,10 @@ class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
         if self.request.user.has_perm("mailings.view_all_mailings"):
             return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
+
+    def form_valid(self, form):
+        form.instance.owner = self.get_object().owner
+        return super().form_valid(form)
 
     def get_success_url(self):
         return reverse_lazy('mailing_service:mailing_detail', args=[self.kwargs["pk"]])

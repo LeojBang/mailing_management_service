@@ -1,6 +1,7 @@
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
-from config.settings import EMAIL_HOST_USER
+from config.settings import EMAIL_HOST_USER, CACHE_ENABLED
 from mailing_service.models import Mailing, MailingAttempt
 
 
@@ -56,3 +57,15 @@ class MailingService:
             mailing.status = "Partially Completed"
 
         mailing.save()
+
+def get_mailing_from_cache():
+    """Получение данных по рассылкам из кэша, если кэш пуст берем из БД."""
+    if not CACHE_ENABLED:
+        return Mailing.objects.all()
+    key = "campaign_list"
+    cache_data = cache.get(key)
+    if cache_data is not None:
+        return cache_data
+    cache_data = Mailing.objects.all()
+    cache.set(key, cache_data)
+    return cache_data
