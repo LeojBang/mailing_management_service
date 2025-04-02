@@ -9,6 +9,9 @@
         <th>Время окончания рассылки</th>
         <th>Статус рассылки</th>
         <th>Сообщение</th>
+        <th>Успешных</th>
+        <th>Неуспешных</th>
+        <th>Всего</th>
         <th>Получатели</th>
     </tr>
     </thead>
@@ -18,13 +21,16 @@
         <td>{{ mailing.end_time }}</td>
         <td>{{ mailing.status }}</td>
         <td>{{ mailing.message }}</td>
-            <td>
-                {% for recipient in mailing.recipients.all %}
-                    {{ recipient.email }}{% if not forloop.last %}, {% endif %}
-                {% empty %}
-                    Нет получателей
-                {% endfor %}
-            </td>
+        <td>Успешные попытки: {{ mailing.successful_attempts }}</td>
+        <td>Неуспешные попытки: {{ mailing.failed_attempts }}</td>
+        <td>Всего сообщений отправлено: {{ mailing.total_messages_sent }}</td>
+        <td>
+            {% for recipient in mailing.recipients.all %}
+            {{ recipient.email }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+            Нет получателей
+            {% endfor %}
+        </td>
     </tr>
     </tbody>
     <a href="{% url 'mailing_service:mailing_list' %}" class="btn btn-primary mb-3">Назад</a>

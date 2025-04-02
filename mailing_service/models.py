@@ -8,7 +8,7 @@ class MailingRecipient(models.Model):
     email = models.EmailField(unique=True, verbose_name='Email')
     full_name = models.CharField(max_length=100, verbose_name='Ф. И. О.')
     comment = models.TextField(blank=True, verbose_name='Комментарий')
-    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name="Владелец")
 
     def __str__(self):
         return self.full_name
@@ -44,6 +44,9 @@ class Mailing(models.Model):
     message = models.ForeignKey(Message, on_delete=models.CASCADE, verbose_name='Сообщение')
     recipients = models.ManyToManyField(MailingRecipient, verbose_name='Получатели')
     owner = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    successful_attempts = models.PositiveIntegerField(default=0)
+    failed_attempts = models.PositiveIntegerField(default=0)
+    total_messages_sent = models.PositiveIntegerField(default=0)
 
     def check_status(self):
         """Проверка статуса рассылки на основе текущего времени."""
@@ -58,6 +61,9 @@ class Mailing(models.Model):
     class Meta:
         verbose_name = 'Рассылка'
         verbose_name_plural = 'Рассылки'
+        permissions = [
+            ("can_disable_mailing", "Can disable mailing"),
+        ]
 
 
 class MailingAttempt(models.Model):

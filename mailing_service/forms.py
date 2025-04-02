@@ -8,17 +8,18 @@ from mailing_service.models import MailingRecipient, Message, Mailing
 class MessageForm(ModelForm):
     class Meta:
         model = Message
-        fields = ['subject', 'body']
+        fields = ['subject', 'body', 'owner']
         widgets = {
             'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Введите тему письма'}),
-            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Введите текст письма'})
+            'body': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Введите текст письма'}),
+            'owner': forms.Select(attrs={'class': 'form-control'})
         }
 
 
 class MailingRecipientForm(ModelForm):
     class Meta:
         model = MailingRecipient
-        fields = ['email', 'full_name', 'comment']
+        fields = ['email', 'full_name', 'comment', 'owner']
         widgets = {
             'email': forms.EmailInput(
                 attrs={
@@ -32,8 +33,10 @@ class MailingRecipientForm(ModelForm):
                     'placeholder': 'Введите Ф. И. О. получателя',
                 }
             ),
-            'comment': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Введите комментарий'})
+            'comment': forms.Textarea(attrs={'class': 'form-control', 'placeholder': 'Введите комментарий'}),
+            'owner': forms.Select(attrs={'class': 'form-control'})
         }
+
 
 
 class MailingForm(ModelForm):
