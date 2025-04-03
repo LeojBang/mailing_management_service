@@ -1,5 +1,6 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group
+from django.core.management.base import BaseCommand
+
 from users.models import CustomUser
 
 
@@ -9,7 +10,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("email", type=str, help="Email пользователя")
         parser.add_argument("password", type=str, help="Пароль")
-        parser.add_argument("role", type=str, choices=["user", "manager"], help="Роль: 'user' или 'manager'")
+        parser.add_argument(
+            "role",
+            type=str,
+            choices=["user", "manager"],
+            help="Роль: 'user' или 'manager'",
+        )
 
     def handle(self, *args, **kwargs):
         email = kwargs["email"]
@@ -27,6 +33,12 @@ class Command(BaseCommand):
             group = Group.objects.get(name=group_name)
             user.groups.add(group)
 
-            self.stdout.write(self.style.SUCCESS(f"Пользователь {email} создан с ролью '{group_name}'"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"Пользователь {email} создан с ролью '{group_name}'"
+                )
+            )
         else:
-            self.stdout.write(self.style.WARNING(f"Пользователь {email} уже существует"))
+            self.stdout.write(
+                self.style.WARNING(f"Пользователь {email} уже существует")
+            )

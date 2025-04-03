@@ -1,7 +1,8 @@
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.utils import timezone
-from config.settings import EMAIL_HOST_USER, CACHE_ENABLED
+
+from config.settings import CACHE_ENABLED, EMAIL_HOST_USER
 from mailing_service.models import Mailing, MailingAttempt
 
 
@@ -21,12 +22,7 @@ class MailingService:
 
         for recipient in recipients:
             try:
-                send_mail(
-                    subject,
-                    message,
-                    EMAIL_HOST_USER,
-                    [recipient.email]
-                )
+                send_mail(subject, message, EMAIL_HOST_USER, [recipient.email])
                 status = "Success"
                 server_response = "Отправлено успешно"
                 successful += 1
@@ -37,9 +33,7 @@ class MailingService:
 
             # Запись попытки отправки письма
             MailingAttempt.objects.create(
-                status=status,
-                server_response=server_response,
-                mailing=mailing
+                status=status, server_response=server_response, mailing=mailing
             )
 
         # Обновление статистики рассылки
@@ -57,6 +51,7 @@ class MailingService:
             mailing.status = "Partially Completed"
 
         mailing.save()
+
 
 def get_mailing_from_cache():
     """Получение данных по рассылкам из кэша, если кэш пуст берем из БД."""

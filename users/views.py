@@ -1,15 +1,17 @@
-import secrets
-
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.views import PasswordResetView, PasswordResetConfirmView, PasswordResetDoneView, \
-    PasswordResetCompleteView
+from django.contrib.auth.views import (
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
 from django.core.mail import send_mail
 from django.http import HttpResponseForbidden
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, UpdateView, TemplateView, ListView
+from django.views.generic import CreateView, ListView, TemplateView, UpdateView
 
 from config.settings import EMAIL_HOST_USER
-from users.forms import UserRegisterForm, UserProfileForm
+from users.forms import UserProfileForm, UserRegisterForm
 from users.models import CustomUser
 
 
@@ -25,7 +27,9 @@ class RegisterView(CreateView):
         user.generate_token()  # Генерируем токен подтверждения
         user.save()  # Теперь сохраняем в БД
 
-        verification_url = f"http://{self.request.get_host()}/users/email-confirm/{user.token}/"
+        verification_url = (
+            f"http://{self.request.get_host()}/users/email-confirm/{user.token}/"
+        )
         send_mail(
             subject="Подтверждение почты",
             message=f"Здравствуйте, перейдите по ссылке для подтверждения почты: {verification_url}",
@@ -33,7 +37,9 @@ class RegisterView(CreateView):
             recipient_list=[user.email],
         )
 
-        return super().form_valid(form)  # Возвращаем стандартный response **без логина**
+        return super().form_valid(
+            form
+        )  # Возвращаем стандартный response **без логина**
 
 
 class EmailConfirmationView(TemplateView):
@@ -55,6 +61,7 @@ class ProfileView(UpdateView):
     def get_object(self, **kwargs):
         return self.request.user
 
+
 class UsersListView(LoginRequiredMixin, ListView):
     model = CustomUser
     template_name = "users/users_list.html"
@@ -66,6 +73,7 @@ class UsersListView(LoginRequiredMixin, ListView):
                 "У вас нет прав для просмотра списка пользователей."
             )
         return super().dispatch(request, *args, **kwargs)
+
 
 class CustomPasswordResetView(PasswordResetView):
     template_name = "users/password_reset_form.html"

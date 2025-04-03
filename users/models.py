@@ -6,16 +6,31 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     username = None
-    email = models.EmailField(unique=True, verbose_name='Email')
-    avatar = models.ImageField(upload_to='media/avatars', help_text='Загрузите свой аватар', blank=True, null=True)
-    phone_number = models.CharField(max_length=15, blank=True, null=True, verbose_name='Номер телефона',
-                                    help_text='Введите номер телефона')
-    country = models.CharField(max_length=50, blank=True, null=True, verbose_name='Страна',
-                               help_text='Введите страну проживания')
+    email = models.EmailField(unique=True, verbose_name="Email")
+    avatar = models.ImageField(
+        upload_to="media/avatars",
+        help_text="Загрузите свой аватар",
+        blank=True,
+        null=True,
+    )
+    phone_number = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+        verbose_name="Номер телефона",
+        help_text="Введите номер телефона",
+    )
+    country = models.CharField(
+        max_length=50,
+        blank=True,
+        null=True,
+        verbose_name="Страна",
+        help_text="Введите страну проживания",
+    )
     token = models.CharField(unique=True, null=True, blank=True)
     is_verified = models.BooleanField(default=False)  # Флаг подтверждения email
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     class Meta:

@@ -4,14 +4,7 @@
 <h1 class="mb-3 mt-3">Добавить рассылку</h1>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    {{ form.start_time }}<br>
-    {{ form.end_time }}<br>
-    {{ form.status }}<br>
-    {{ form.message }}<br>
-    <label>
-        <input type="checkbox" id="select-all"> Выбрать всех
-    </label>
-    {{ form.recipients }}<br>
+    {{ form.as_p }}<br>
     <button type="submit" class="btn btn-primary">
         {% if mailing %}
         Сохранить
