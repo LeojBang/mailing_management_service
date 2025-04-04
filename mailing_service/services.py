@@ -27,6 +27,7 @@ class MailingService:
                 server_response = "Отправлено успешно"
                 successful += 1
             except Exception as e:
+                print(str(e))
                 status = "Failed"
                 server_response = str(e)
                 failed += 1

@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.models import Group
 from django.contrib.auth.views import (PasswordResetCompleteView,
                                        PasswordResetConfirmView,
                                        PasswordResetDoneView,
@@ -25,6 +26,8 @@ class RegisterView(CreateView):
         user.generate_token()  # Генерируем токен подтверждения
         user.save()  # Теперь сохраняем в БД
 
+        group = Group.objects.get(name="Пользователи")
+        user.groups.add(group)
         verification_url = (
             f"http://{self.request.get_host()}/users/email-confirm/{user.token}/"
         )
@@ -35,9 +38,7 @@ class RegisterView(CreateView):
             recipient_list=[user.email],
         )
 
-        return super().form_valid(
-            form
-        )  # Возвращаем стандартный response **без логина**
+        return super().form_valid(form)
 
 
 class EmailConfirmationView(TemplateView):
@@ -71,6 +72,16 @@ class UsersListView(LoginRequiredMixin, ListView):
                 "У вас нет прав для просмотра списка пользователей."
             )
         return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        # Получаем группу "Пользователи"
+        users_group = Group.objects.get(name="Пользователи")
+
+        # Получаем всех пользователей из этой группы, кроме текущего пользователя
+        queryset = CustomUser.objects.filter(groups=users_group).exclude(
+            id=self.request.user.id
+        )
+        return queryset
 
 
 class CustomPasswordResetView(PasswordResetView):

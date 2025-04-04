@@ -53,7 +53,7 @@ class MailingRecipientCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class MailingRecipientDetailView(DetailView):
+class MailingRecipientDetailView(LoginRequiredMixin, DetailView):
     model = MailingRecipient
     template_name = "mailing_service/mailing_recipient_detail.html"
     context_object_name = "mailing_recipient"
@@ -113,7 +113,7 @@ class MailingRecipientDeleteView(LoginRequiredMixin, DeleteView):
         return super().dispatch(request, *args, **kwargs)
 
 
-class MessageListView(ListView):
+class MessageListView(LoginRequiredMixin, ListView):
     model = Message
     template_name = "mailing_service/message_list.html"
     context_object_name = "message_list"
@@ -137,8 +137,13 @@ class MessageCreateView(LoginRequiredMixin, CreateView):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.view_message"):
+            return HttpResponseForbidden("У вас нет прав для просмотра сообщения.")
+        return super().dispatch(request, *args, **kwargs)
 
-class MessageDetailView(DetailView):
+
+class MessageDetailView(LoginRequiredMixin, DetailView):
     model = Message
     template_name = "mailing_service/message_detail.html"
     context_object_name = "message"
@@ -232,11 +237,6 @@ class MailingListView(LoginRequiredMixin, ListView):
         ):
             return get_data_from_cache(model=Mailing)
         return Mailing.objects.filter(owner=self.request.user)
-
-    def dispatch(self, request, *args, **kwargs):
-        if not self.request.user.has_perm("mailing_service.view_mailing"):
-            return HttpResponseForbidden("У вас нет прав для удаления рассылки.")
-        return super().dispatch(request, *args, **kwargs)
 
     @staticmethod
     def disable_mailing(request, pk):
