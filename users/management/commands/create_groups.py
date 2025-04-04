@@ -32,6 +32,7 @@ class Command(BaseCommand):
             "view_mailing",
             "view_mailingrecipient",
             "view_message",
+            "view_customuser",
             "can_disable_mailing",
             "can_block_user",
         ]

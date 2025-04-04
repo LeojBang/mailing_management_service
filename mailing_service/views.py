@@ -1,20 +1,16 @@
-from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
-from django.views.generic import (
-    CreateView,
-    DeleteView,
-    DetailView,
-    ListView,
-    TemplateView,
-    UpdateView,
-)
+from django.utils import timezone
+from django.views.generic import (CreateView, DeleteView, DetailView, ListView,
+                                  TemplateView, UpdateView)
 
-from mailing_service.forms import MailingForm, MailingRecipientForm, MessageForm
+from mailing_service.forms import (MailingForm, MailingRecipientForm,
+                                   MessageForm)
 from mailing_service.models import Mailing, MailingRecipient, Message
-from mailing_service.services import MailingService, get_mailing_from_cache
+from mailing_service.services import MailingService, get_data_from_cache
 
 
 # Create your views here.
@@ -38,8 +34,11 @@ class MailingRecipientListView(LoginRequiredMixin, ListView):
     context_object_name = "mailing_recipient_list"
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_recipients"):
-            return MailingRecipient.objects.all()
+        if (
+            self.request.user.has_perm("mailing_service.view_mailingrecipient")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=MailingRecipient)
         return MailingRecipient.objects.filter(owner=self.request.user)
 
 
@@ -60,9 +59,17 @@ class MailingRecipientDetailView(DetailView):
     context_object_name = "mailing_recipient"
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_recipients"):
-            return MailingRecipient.objects.all()
+        if (
+            self.request.user.has_perm("mailing_service.view_mailingrecipient")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=MailingRecipient)
         return MailingRecipient.objects.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.view_mailingrecipient"):
+            return HttpResponseForbidden("У вас нет прав для просмотра получателя.")
+        return super().dispatch(request, *args, **kwargs)
 
 
 class MailingRecipientUpdateView(LoginRequiredMixin, UpdateView):
@@ -70,6 +77,13 @@ class MailingRecipientUpdateView(LoginRequiredMixin, UpdateView):
     template_name = "mailing_service/mailing_recipient_form.html"
     form_class = MailingRecipientForm
     success_url = reverse_lazy("mailing_service:mailing_recipient_list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.change_mailingrecipient"):
+            return HttpResponseForbidden(
+                "У вас нет прав для редактирования получателя."
+            )
+        return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.owner = self.get_object().owner
@@ -93,11 +107,24 @@ class MailingRecipientDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         return MailingRecipient.objects.filter(owner=self.request.user)
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.delete_mailingrecipient"):
+            return HttpResponseForbidden("У вас нет прав для удаления получателя.")
+        return super().dispatch(request, *args, **kwargs)
+
 
 class MessageListView(ListView):
     model = Message
     template_name = "mailing_service/message_list.html"
     context_object_name = "message_list"
+
+    def get_queryset(self):
+        if (
+            self.request.user.has_perm("mailing_service.view_message")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=Message)
+        return Message.objects.filter(owner=self.request.user)
 
 
 class MessageCreateView(LoginRequiredMixin, CreateView):
@@ -116,12 +143,33 @@ class MessageDetailView(DetailView):
     template_name = "mailing_service/message_detail.html"
     context_object_name = "message"
 
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.view_message"):
+            return HttpResponseForbidden("У вас нет прав для просмотра сообщения.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        if (
+            self.request.user.has_perm("mailing_service.view_message")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=Message)
+        return Message.objects.filter(owner=self.request.user)
+
 
 class MessageUpdateView(LoginRequiredMixin, UpdateView):
     model = Message
     template_name = "mailing_service/message_form.html"
     form_class = MessageForm
     success_url = reverse_lazy("mailing_service:message_list")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.change_message"):
+            return HttpResponseForbidden("У вас нет прав для редактирования сообщения.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
     def get_success_url(self):
         return reverse_lazy("mailing_service:message_detail", args=[self.kwargs["pk"]])
@@ -131,14 +179,22 @@ class MessageUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_valid(form)
 
 
-class MessageDeleteView(DeleteView):
+class MessageDeleteView(LoginRequiredMixin, DeleteView):
     model = Message
     context_object_name = "message"
     template_name = "mailing_service/message_delete.html"
     success_url = reverse_lazy("mailing_service:message_list")
 
+    def get_queryset(self):
+        return Message.objects.filter(owner=self.request.user)
 
-class MailingStatisticsView(TemplateView):
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.delete_message"):
+            return HttpResponseForbidden("У вас нет прав для удаления сообщения.")
+        return super().dispatch(request, *args, **kwargs)
+
+
+class MailingStatisticsView(LoginRequiredMixin, TemplateView):
     template_name = "mailing_service/statistics.html"
 
     def get_context_data(self, **kwargs):
@@ -170,9 +226,30 @@ class MailingListView(LoginRequiredMixin, ListView):
     context_object_name = "mailing_list"
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_mailings"):
-            return get_mailing_from_cache()
+        if (
+            self.request.user.has_perm("mailing_service.view_mailing")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=Mailing)
         return Mailing.objects.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.view_mailing"):
+            return HttpResponseForbidden("У вас нет прав для удаления рассылки.")
+        return super().dispatch(request, *args, **kwargs)
+
+    @staticmethod
+    def disable_mailing(request, pk):
+        mailing = Mailing.objects.get(pk=pk)
+        if not request.user.has_perm("mailing_service.can_disable_mailing"):
+            return HttpResponseForbidden("У вас нет прав на отключение рассылки.")
+
+        if mailing.status != "Completed":
+            mailing.status = "Completed"
+            mailing.end_time = timezone.now()
+            mailing.save()
+
+        return redirect(reverse_lazy("mailing_service:mailing_list"))
 
 
 class MailingCreateView(LoginRequiredMixin, CreateView):
@@ -183,7 +260,19 @@ class MailingCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
+        form.instance.status = "Created"
         return super().form_valid(form)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+
+        recipients_qs = MailingRecipient.objects.filter(owner=self.request.user)
+        messages_qs = Message.objects.filter(owner=self.request.user)
+
+        form.fields["recipients"].queryset = recipients_qs
+        form.fields["message"].queryset = messages_qs
+
+        return form
 
 
 class MailingDetailView(LoginRequiredMixin, DetailView):
@@ -191,32 +280,49 @@ class MailingDetailView(LoginRequiredMixin, DetailView):
     template_name = "mailing_service/mailing_detail.html"
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_mailings"):
-            return Mailing.objects.all()
+        if (
+            self.request.user.has_perm("mailing_service.view_mailing")
+            and self.request.user.groups.filter(name="Менеджеры").exists()
+        ):
+            return get_data_from_cache(model=Mailing)
         return Mailing.objects.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.view_mailing"):
+            return HttpResponseForbidden("У вас нет прав для просмотра рассылки.")
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         mailing = get_object_or_404(Mailing, pk=self.kwargs["pk"])
-        if mailing.owner != request.user and not request.user.has_perm(
-            "mailings.can_manage_mailings"
-        ):
-            return HttpResponseForbidden("У вас нет прав начать рассылку.")
         if mailing.status not in ["Running", "Completed"]:
             MailingService.start_mailing(mailing)
         return redirect("mailing_service:mailing_detail", pk=self.kwargs["pk"])
 
 
-class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+class MailingUpdateView(LoginRequiredMixin, UpdateView):
     model = Mailing
     template_name = "mailing_service/mailing_form.html"
     form_class = MailingForm
     success_url = reverse_lazy("mailing_service:mailing_list")
-    permission_required = "mailings.can_disable_mailing"
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_mailings"):
-            return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.change_mailing"):
+            return HttpResponseForbidden("У вас нет прав для редактирования рассылки.")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+
+        recipients_qs = MailingRecipient.objects.filter(owner=self.request.user)
+        messages_qs = Message.objects.filter(owner=self.request.user)
+
+        form.fields["recipients"].queryset = recipients_qs
+        form.fields["message"].queryset = messages_qs
+
+        return form
 
     def form_valid(self, form):
         form.instance.owner = self.get_object().owner
@@ -226,13 +332,16 @@ class MailingUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView)
         return reverse_lazy("mailing_service:mailing_detail", args=[self.kwargs["pk"]])
 
 
-class MailingDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+class MailingDeleteView(LoginRequiredMixin, DeleteView):
     model = Mailing
     context_object_name = "mailing"
     template_name = "mailing_service/mailing_delete.html"
     success_url = reverse_lazy("mailing_service:mailing_list")
 
     def get_queryset(self):
-        if self.request.user.has_perm("mailings.view_all_mailings"):
-            return Mailing.objects.all()
         return Mailing.objects.filter(owner=self.request.user)
+
+    def dispatch(self, request, *args, **kwargs):
+        if not self.request.user.has_perm("mailing_service.delete_mailing"):
+            return HttpResponseForbidden("У вас нет прав для удаления рассылки.")
+        return super().dispatch(request, *args, **kwargs)

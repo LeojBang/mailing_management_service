@@ -44,7 +44,7 @@ class MailingRecipientForm(ModelForm):
 class MailingForm(ModelForm):
     class Meta:
         model = Mailing
-        fields = ["start_time", "end_time", "status", "message", "recipients"]
+        fields = ["start_time", "end_time", "message", "recipients"]
         widgets = {
             "start_time": forms.DateTimeInput(
                 attrs={
@@ -58,12 +58,6 @@ class MailingForm(ModelForm):
                     "class": "form-control",
                     "placeholder": "Введите дату и время последней отправки",
                     "input_format": "%Y-%m-%d %H:%M:%S",
-                }
-            ),
-            "status": forms.Select(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Выберите статус рассылки",
                 }
             ),
             "message": forms.Select(

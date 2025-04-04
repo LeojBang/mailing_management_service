@@ -1,26 +1,17 @@
 from django.urls import path
-from django.views.decorators.cache import cache_page
 
 from mailing_service.apps import MailingServiceConfig
-from mailing_service.views import (
-    HomeView,
-    MailingCreateView,
-    MailingDeleteView,
-    MailingDetailView,
-    MailingListView,
-    MailingRecipientCreateView,
-    MailingRecipientDeleteView,
-    MailingRecipientDetailView,
-    MailingRecipientListView,
-    MailingRecipientUpdateView,
-    MailingStatisticsView,
-    MailingUpdateView,
-    MessageCreateView,
-    MessageDeleteView,
-    MessageDetailView,
-    MessageListView,
-    MessageUpdateView,
-)
+from mailing_service.views import (HomeView, MailingCreateView,
+                                   MailingDeleteView, MailingDetailView,
+                                   MailingListView, MailingRecipientCreateView,
+                                   MailingRecipientDeleteView,
+                                   MailingRecipientDetailView,
+                                   MailingRecipientListView,
+                                   MailingRecipientUpdateView,
+                                   MailingStatisticsView, MailingUpdateView,
+                                   MessageCreateView, MessageDeleteView,
+                                   MessageDetailView, MessageListView,
+                                   MessageUpdateView)
 
 app_name = MailingServiceConfig.name
 
@@ -28,7 +19,7 @@ urlpatterns = [
     path("", HomeView.as_view(), name="home"),
     path(
         "mailing_recipient/",
-        cache_page(300)(MailingRecipientListView.as_view()),
+        MailingRecipientListView.as_view(),
         name="mailing_recipient_list",
     ),
     path(
@@ -38,7 +29,7 @@ urlpatterns = [
     ),
     path(
         "mailing_recipient/<int:pk>/",
-        cache_page(300)(MailingRecipientDetailView.as_view()),
+        MailingRecipientDetailView.as_view(),
         name="mailing_recipient_detail",
     ),
     path(
@@ -51,7 +42,7 @@ urlpatterns = [
         MailingRecipientDeleteView.as_view(),
         name="mailing_recipient_delete",
     ),
-    path("message/", cache_page(300)(MessageListView.as_view()), name="message_list"),
+    path("message/", MessageListView.as_view(), name="message_list"),
     path("message/create/", MessageCreateView.as_view(), name="message_create"),
     path("message/<int:pk>/", MessageDetailView.as_view(), name="message_detail"),
     path(
@@ -60,12 +51,17 @@ urlpatterns = [
     path(
         "message/<int:pk>/delete/", MessageDeleteView.as_view(), name="message_delete"
     ),
-    path("mailing/", cache_page(300)(MailingListView.as_view()), name="mailing_list"),
+    path("mailing/", MailingListView.as_view(), name="mailing_list"),
+    path(
+        "mailing/<int:pk>/disable",
+        MailingListView.disable_mailing,
+        name="mailing_disable",
+    ),
     path("statistics/", MailingStatisticsView.as_view(), name="mailing_statistics"),
     path("mailing/create/", MailingCreateView.as_view(), name="mailing_create"),
     path(
         "mailing/<int:pk>/",
-        cache_page(300)(MailingDetailView.as_view()),
+        MailingDetailView.as_view(),
         name="mailing_detail",
     ),
     path(

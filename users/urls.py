@@ -3,16 +3,11 @@ from django.urls import path
 
 from users.apps import UsersConfig
 from users.services import block_user, email_verification
-from users.views import (
-    CustomPasswordResetCompleteView,
-    CustomPasswordResetConfirmView,
-    CustomPasswordResetDoneView,
-    CustomPasswordResetView,
-    EmailConfirmationView,
-    ProfileView,
-    RegisterView,
-    UsersListView,
-)
+from users.views import (CustomPasswordResetCompleteView,
+                         CustomPasswordResetConfirmView,
+                         CustomPasswordResetDoneView, CustomPasswordResetView,
+                         EmailConfirmationView, ProfileView, RegisterView,
+                         UsersListView)
 
 app_name = UsersConfig.name
 

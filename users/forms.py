@@ -1,9 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import (
-    PasswordResetForm,
-    SetPasswordForm,
-    UserCreationForm,
-)
+from django.contrib.auth.forms import (PasswordResetForm, SetPasswordForm,
+                                       UserCreationForm)
 
 from users.models import CustomUser
 

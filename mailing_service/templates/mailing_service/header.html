@@ -6,7 +6,9 @@
         <a class="navbar-brand p-2" href="{% url 'mailing_service:message_list' %}">Сообщения</a>
         <a class="navbar-brand p-2" href="{% url 'mailing_service:mailing_list' %}">Рассылки</a>
         <a class="navbar-brand p-2" href="{% url 'mailing_service:mailing_statistics' %}">Статистика</a>
-
+        {% if perms.users.view_customuser %}
+            <a class="navbar-brand p-2" href="{% url 'users:users_list' %}">Пользователи</a>
+        {% endif %}
         <!-- Правая часть навбара -->
         <div class="ms-auto d-flex align-items-center">
             {% if user.is_authenticated %}

@@ -8,7 +8,7 @@ class CustomUser(AbstractUser):
     username = None
     email = models.EmailField(unique=True, verbose_name="Email")
     avatar = models.ImageField(
-        upload_to="media/avatars",
+        upload_to="avatars/",
         help_text="Загрузите свой аватар",
         blank=True,
         null=True,

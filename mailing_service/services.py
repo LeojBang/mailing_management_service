@@ -53,14 +53,14 @@ class MailingService:
         mailing.save()
 
 
-def get_mailing_from_cache():
+def get_data_from_cache(model):
     """Получение данных по рассылкам из кэша, если кэш пуст берем из БД."""
     if not CACHE_ENABLED:
-        return Mailing.objects.all()
-    key = "campaign_list"
+        return model.objects.all()
+    key = f"{model}_list"
     cache_data = cache.get(key)
     if cache_data is not None:
         return cache_data
-    cache_data = Mailing.objects.all()
+    cache_data = model.objects.all()
     cache.set(key, cache_data)
     return cache_data

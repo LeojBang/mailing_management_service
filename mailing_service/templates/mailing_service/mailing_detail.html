@@ -38,7 +38,10 @@
 {% if mailing.status not in "Запущена" and mailing.status not in "Completed" %}
     <form method="post" action="{% url 'mailing_service:mailing_detail' mailing.id %}">
         {% csrf_token %}
+        {% if perms.mailing_service.change_mailing %}
         <button type="submit" class="btn btn-success mb-3">Запустить рассылку</button>
+        {% endif %}
+
     </form>
 {% endif %}
 
