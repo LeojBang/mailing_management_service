@@ -1,0 +1,49 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1>Информация о рассылке {{ mailing.message }} </h1>
+<table class="table text-center">
+    <thead>
+    <tr>
+        <th>Время начала рассылки</th>
+        <th>Время окончания рассылки</th>
+        <th>Статус рассылки</th>
+        <th>Сообщение</th>
+        <th>Успешных</th>
+        <th>Неуспешных</th>
+        <th>Всего</th>
+        <th>Получатели</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ mailing.start_time }}</td>
+        <td>{{ mailing.end_time }}</td>
+        <td>{{ mailing.status }}</td>
+        <td>{{ mailing.message }}</td>
+        <td>Успешные попытки: {{ mailing.successful_attempts }}</td>
+        <td>Неуспешные попытки: {{ mailing.failed_attempts }}</td>
+        <td>Всего сообщений отправлено: {{ mailing.total_messages_sent }}</td>
+        <td>
+            {% for recipient in mailing.recipients.all %}
+            {{ recipient.email }}{% if not forloop.last %}, {% endif %}
+            {% empty %}
+            Нет получателей
+            {% endfor %}
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+{% if mailing.status not in "Запущена" and mailing.status not in "Completed" %}
+    <form method="post" action="{% url 'mailing_service:mailing_detail' mailing.id %}">
+        {% csrf_token %}
+        {% if perms.mailing_service.change_mailing %}
+        <button type="submit" class="btn btn-success mb-3">Запустить рассылку</button>
+        {% endif %}
+
+    </form>
+{% endif %}
+
+<a href="{% url 'mailing_service:mailing_list' %}" class="btn btn-primary mb-3">Назад</a>
+{% endblock %}

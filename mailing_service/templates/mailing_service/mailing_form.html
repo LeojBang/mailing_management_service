@@ -1,0 +1,31 @@
+{% extends 'mailing_service/base.html' %}
+{% load static %}
+{% block content %}
+<h1 class="mb-3 mt-3">Добавить рассылку</h1>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}<br>
+    <button type="submit" class="btn btn-primary">
+        {% if mailing %}
+        Сохранить
+        {% else %}
+        Добавить
+        {% endif %}
+    </button>
+    <a href="{% url 'mailing_service:mailing_list' %}" class="btn btn-primary">Назад</a>
+
+
+</form>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let selectAllCheckbox = document.getElementById("select-all");
+        let selectField = document.getElementById("id_recipients");
+
+        selectAllCheckbox.addEventListener("change", function () {
+            for (let option of selectField.options) {
+                option.selected = this.checked;
+            }
+        });
+    });
+</script>
+{% endblock %}

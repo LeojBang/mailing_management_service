@@ -1,0 +1,7 @@
+{% extends 'mailing_service/base.html' %}
+{% block content %}
+    <h2>Статистика рассылок</h2>
+    <p>Всего успешных попыток: {{ total_successful }}</p>
+    <p>Всего неуспешных попыток: {{ total_failed }}</p>
+    <p>Всего сообщений отправлено: {{ total_messages }}</p>
+{% endblock %}
